@@ -1,202 +1,437 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Malla Curricular - Prevención de Riesgos</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Malla Curricular Ingeniería en Prevención de Riesgos</title>
   <style>
+    /* Fuente elegante, limpia */
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #d6f5d6;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #d7ead7; /* verde pastel suave */
       margin: 0;
-      padding: 40px;
+      padding: 20px;
+      color: #033603;
     }
-
     h1 {
       text-align: center;
-      color: #2e7d32;
-      margin-bottom: 30px;
+      margin-bottom: 20px;
     }
 
-    .grid {
+    .malla-container {
       display: flex;
-      justify-content: center;
-      gap: 20px;
-      flex-wrap: wrap;
+      gap: 10px;
+      overflow-x: auto;
+      padding-bottom: 10px;
     }
 
-    .semester {
-      background-color: #c8e6c9;
-      border: 2px solid #81c784;
-      border-radius: 20px;
-      padding: 20px;
-      width: 200px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
-
-    .semester h3 {
-      text-align: center;
-      font-weight: bold;
-      font-size: 1.2em;
-      color: #1b5e20;
-      margin-bottom: 15px;
-    }
-
-    .subject {
-      margin: 8px 0;
+    .semestre {
+      background-color: #a8d5a8; /* verde pastel */
+      border: 2px solid #577d57; /* verde pastel oscuro */
+      border-radius: 8px;
       padding: 10px;
-      background-color: #e0f2f1;
-      border: 2px solid #80cbc4;
-      border-radius: 10px;
-      font-weight: 600;
+      min-width: 220px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .semestre h2 {
+      margin-top: 0;
+      margin-bottom: 12px;
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    .materia {
+      background-color: #d5edd5; /* verde pálido */
+      border: 1.5px solid #9bcf9b; /* borde un poco más oscuro */
+      border-radius: 6px;
+      padding: 8px;
+      margin: 5px 0;
+      width: 100%;
+      display: flex;
+      align-items: center;
       cursor: pointer;
-      transition: all 0.3s ease;
-      color: #004d40;
-      text-align: center;
+      user-select: none;
+      color: #033603;
+      font-weight: 600;
+      transition: background-color 0.3s, border-color 0.3s, color 0.3s;
+    }
+    .materia input[type="checkbox"] {
+      margin-right: 10px;
+      cursor: pointer;
+      transform: scale(1.2);
     }
 
-    .subject:hover {
-      background-color: #b2dfdb;
+    /* Bloqueadas */
+    .bloqueada {
+      background-color: #c0c0c0;
+      border-color: #8a8a8a;
+      color: #5a5a5a;
+      cursor: not-allowed;
     }
-
-    .locked {
-      background-color: #e0e0e0 !important;
-      border: 2px solid #9e9e9e !important;
-      color: #616161 !important;
+    .bloqueada input[type="checkbox"] {
       pointer-events: none;
+      cursor: not-allowed;
     }
 
-    .completed {
-      background-color: #cce4f6 !important;
-      border: 2px solid #5393c7 !important;
-      color: #0d47a1 !important;
+    /* Completadas */
+    .completada {
+      background-color: #c7d9f1; /* azul claro */
+      border-color: #4971b8; /* azul oscuro */
+      color: #1a2a5a; /* texto azul oscuro */
       text-decoration: line-through;
     }
+
+    /* Para que el texto también se tache */
+    .completada label {
+      text-decoration: line-through;
+    }
+
+    /* Ajuste checkbox con label para click */
+    .materia label {
+      flex: 1;
+      cursor: pointer;
+    }
+
   </style>
 </head>
 <body>
   <h1>Malla Curricular - Ingeniería en Prevención de Riesgos</h1>
-  <div class="grid" id="curriculum"></div>
+  <div class="malla-container" id="malla">
+
+    <!-- Las columnas se crearán por JS -->
+
+  </div>
 
   <script>
-    const curriculum = {
-      1: [
-        { name: "Matemáticas" },
-        { name: "Taller Integrado ABP" },
-        { name: "Salud Ocupacional", unlocks: ["Protocolos MINSAL 1"] },
-        { name: "Fundamentos de Seg. Industrial", unlocks: ["Seguridad Industrial 1"] },
-        { name: "Química", unlocks: ["Riesgos en la Ind.Qca."] },
-        { name: "Comunicación y Aprendizaje" },
-        { name: "Herramientas de Ofimáticas" }
-      ],
-      2: [
-        { name: "Matemática Aplicada" },
-        { name: "Protocolos MINSAL 1", locked: true, unlocks: ["Lab. Higiene Industrial 1", "Ergonomía 1"] },
-        { name: "Seguridad Industrial 1", locked: true, unlocks: ["Seguridad Industrial 2"] },
-        { name: "Riesgos en la Ind.Qca.", locked: true, unlocks: ["Emergencias en la Industria"] },
-        { name: "Inglés 1" },
-        { name: "Desarrollo Personal" }
-      ],
-      3: [
-        { name: "Física 1" },
-        { name: "Lab. Higiene Industrial 1", locked: true },
-        { name: "Ergonomía 1", locked: true },
-        { name: "Seguridad Industrial 2", locked: true, unlocks: ["Riesgos Industriales"] },
-        { name: "Emergencias en la Industria", locked: true, unlocks: ["Emergencias Civiles"] },
-        { name: "Inglés 2" },
-        { name: "Cultura y Sociedad" }
-      ],
-      4: [
-        { name: "Protocolos MINSAL 2", locked: true },
-        { name: "Lab. Higiene Industrial 2", locked: true },
-        { name: "Ergonomía 2", locked: true },
-        { name: "Riesgos Industriales", locked: true },
-        { name: "Emergencias Civiles", locked: true },
-        { name: "Emprendimiento y Empleabilidad" },
-        { name: "Sustentabilidad y Medioambiente" }
-      ],
-      5: [
-        { name: "Procesos Productivos 1", unlocks: ["Procesos Productivos 2"] },
-        { name: "Leyes Laborales 1", unlocks: ["Leyes Laborales 2"] },
-        { name: "Física 2" },
-        { name: "Elaboración de Infor. Técnicos" },
-        { name: "Leyes Ambientales", unlocks: ["Energías Renovables"] },
-        { name: "Inglés 3" }
-      ],
-      6: [
-        { name: "Procesos Productivos 2", locked: true, unlocks: ["Interpretación de Planos"] },
-        { name: "Leyes Laborales 2", locked: true },
-        { name: "Laboratorio de EPP" },
-        { name: "Estadística y Probabilidades" },
-        { name: "Energías Renovables", locked: true, unlocks: ["Control de Riesgos Ambientales"] },
-        { name: "Inglés 4" },
-        { name: "Habilidades Comunicativas" }
-      ],
-      7: [
-        { name: "Interpretación de Planos", locked: true },
-        { name: "Sistemas de Gestión SSO", unlocks: ["Sistemas de Gestión Integrado"] },
-        { name: "Ev. Proyectos de Prevención" },
-        { name: "Plan Experto Trabajo en Terreno" },
-        { name: "Control de Riesgos Ambientales", locked: true, unlocks: ["Sistemas de Gestión Ambiental"] }
-      ],
-      8: [
-        { name: "Sistemas de Gestión Integrado", locked: true },
-        { name: "Proyecto Integrado Final" },
-        { name: "Gestión Hab. Directivas" },
-        { name: "Sistemas de Gestión Ambiental", locked: true },
-        { name: "Práctica Integrada Competencias" }
-      ]
+    // Datos materias semestre x materias
+    const semestres = [
+      {
+        nombre: "Primer Semestre",
+        materias: [
+          "Matemáticas",
+          "Taller integrado ABP",
+          "Salud ocupacional",
+          "Fundamentos de seg. Industrial",
+          "Química",
+          "Comunicación y aprendizaje",
+          "Herramientas de ofimáticas"
+        ]
+      },
+      {
+        nombre: "Segundo Semestre",
+        materias: [
+          "Matemática aplicada",
+          "Protocolos MINSAL 1",
+          "Seguridad industrial 1",
+          "Riesgos en la Ind.Qca.",
+          "Inglés 1",
+          "Desarrollo personal"
+        ]
+      },
+      {
+        nombre: "Tercer Semestre",
+        materias: [
+          "Física 1",
+          "Lab. Higiene industrial 1",
+          "Ergonómia 1",
+          "Seguridad industrial 2",
+          "Emergencias en la industria",
+          "Inglés 2",
+          "Cultura y sociedad"
+        ]
+      },
+      {
+        nombre: "Cuarto Semestre",
+        materias: [
+          "Protocolos MINSAL 2",
+          "Lab. Higiene industrial 2",
+          "Ergonomía 2",
+          "Riesgos industriales",
+          "Emergencias civiles",
+          "Emprendimiento y empleabilidad",
+          "Sustentab. y medioambiente"
+        ]
+      },
+      {
+        nombre: "Quinto Semestre",
+        materias: [
+          "Procesos productivos 1",
+          "Leyes laborales 1",
+          "Física 2",
+          "Elaboración de infor. técnicos",
+          "Leyes ambientales",
+          "Inglés 3"
+        ]
+      },
+      {
+        nombre: "Sexto Semestre",
+        materias: [
+          "Procesos productivos 2",
+          "Leyes laborales 2",
+          "Laboratorio de EPP",
+          "Estadística y probabilidades",
+          "Energías renovables",
+          "Inglés 4",
+          "Habilidades comunicativas"
+        ]
+      },
+      {
+        nombre: "Séptimo Semestre",
+        materias: [
+          "Interpretación de planos",
+          "Sistemas de gestión SSO",
+          "Ev. Proyectos de prevención",
+          "Plan experto trabajo en terreno",
+          "Control de riesgos ambientales"
+        ]
+      },
+      {
+        nombre: "Octavo Semestre",
+        materias: [
+          "Sistemas de gestión integrado",
+          "Proyecto integrado final",
+          "Gestión hab. directivas",
+          "Sistemas de gestión ambiental",
+          "Práct. integrada competencias"
+        ]
+      }
+    ];
+
+    // Control de materias bloqueadas/completadas
+    // Estado guardado en localStorage para persistencia
+    // Guardaremos en localStorage un objeto con key: 'mallaEstado' { 'semestre-materia': true/false }
+    // true = completada, false o no existe = bloqueada o desbloqueada
+
+    // Mapeo de desbloqueos según indicaciones:
+
+    /*
+      - Del primer semestre:
+        * "Salud ocupacional" -> desbloquea "Protocolos MINSAL 1" (2do sem)
+        * "Fundamentos de seg. Industrial" -> desbloquea "Seguridad industrial 1" (2do sem)
+        * "Química" -> desbloquea "Riesgos en la Ind.Qca." (2do sem)
+
+      - Del segundo semestre:
+        * "Protocolos MINSAL 1" -> desbloquea "Lab. Higiene industrial 1" y "Ergonómia 1" (3er sem)
+        * "Seguridad industrial 1" -> desbloquea "Seguridad industrial 2" (3er sem)
+        * "Riesgos en la Ind.Qca." -> desbloquea "Emergencias en la industria" (3er sem)
+
+      - Del tercer semestre:
+        * "Lab. Higiene industrial 1" + "Ergonómia 1" completadas -> desbloquean "Protocolos MINSAL 2", "Lab. Higiene industrial 2", "Ergonomía 2" (4to sem)
+        * "Seguridad industrial 2" -> desbloquea "Riesgos industriales" (4to sem)
+        * "Emergencias en la industria" -> desbloquea "Emergencias civiles" (4to sem)
+
+      - Del quinto semestre:
+        * "Procesos productivos 1" -> desbloquea "Procesos productivos 2" (6to sem) y "Interpretación de planos" (7mo sem)
+        * "Leyes laborales 1" -> desbloquea "Leyes laborales 2" (6to sem)
+        * "Leyes ambientales" -> desbloquea "Energías renovables" (6to sem)
+
+      - Del sexto semestre:
+        * "Energías renovables" -> desbloquea "Control de riesgos ambientales" (7mo sem)
+
+      - Del séptimo semestre:
+        * "Sistemas de gestión SSO" -> desbloquea "Sistemas de gestión integrado" (8vo sem)
+        * "Control de riesgos ambientales" -> desbloquea "Sistemas de gestión ambiental" (8vo sem)
+    */
+
+    // Para un acceso rápido, indexamos las materias con ids: "s{semestre_index}-m{materia_index}"
+    // Ejemplo: "s0-m2" => primer semestre, materia 3 ("Salud ocupacional")
+
+    const desbloqueos = {
+      "s0-m2": ["s1-m1"], // Salud ocupacional -> Protocolos MINSAL 1
+      "s0-m3": ["s1-m2"], // Fundamentos seg. Industrial -> Seguridad industrial 1
+      "s0-m4": ["s1-m3"], // Química -> Riesgos en la Ind.Qca.
+
+      "s1-m1": ["s2-m1", "s2-m2"], // Protocolos MINSAL 1 -> Lab. Higiene industrial 1 y Ergonomía 1
+      "s1-m2": ["s2-m3"], // Seguridad industrial 1 -> Seguridad industrial 2
+      "s1-m3": ["s2-m4"], // Riesgos en la Ind.Qca. -> Emergencias en la industria
+
+      // Para desbloquear 3 materias del 4to semestre, tras completar 2 del 3er semestre:
+      // Lo manejaremos en JS por condición especial
+
+      "s2-m3": ["s3-m3"], // Seguridad industrial 2 -> Riesgos industriales
+      "s2-m4": ["s3-m4"], // Emergencias en la industria -> Emergencias civiles
+
+      "s4-m0": ["s5-m0", "s6-m0"], // Procesos productivos 1 -> Procesos productivos 2 y Interpretación de planos
+      "s4-m1": ["s5-m1"], // Leyes laborales 1 -> Leyes laborales 2
+      "s4-m4": ["s5-m4"], // Leyes ambientales -> Energías renovables
+
+      "s5-m4": ["s6-m4"], // Energías renovables -> Control de riesgos ambientales
+
+      "s6-m1": ["s7-m0"], // Sistemas de gestión SSO -> Sistemas de gestión integrado
+      "s6-m4": ["s7-m3"], // Control de riesgos ambientales -> Sistemas de gestión ambiental
     };
 
-    const state = {};
+    // Para el desbloqueo especial: si Lab. Higiene industrial 1 y Ergonomía 1 completadas -> desbloquear 3 del 4to semestre
+    // Materias clave tercer semestre para esto: s2-m1 y s2-m2
+    // Materias a desbloquear: s3-m0, s3-m1, s3-m2
 
-    function createSubject(sem, subject) {
-      const div = document.createElement('div');
-      div.className = 'subject';
-      div.textContent = subject.name;
+    // Estado guardado: { idMateria: boolean }
 
-      if (subject.locked || sem !== 1) {
-        div.classList.add('locked');
-        state[subject.name] = 'locked';
-      } else {
-        state[subject.name] = 'unlocked';
-      }
+    // Cargar estado
+    let estado = JSON.parse(localStorage.getItem("mallaEstado")) || {};
 
-      div.addEventListener('click', () => {
-        if (div.classList.contains('locked') || div.classList.contains('completed')) return;
-        div.classList.add('completed');
-        state[subject.name] = 'completed';
+    // Para inicializar materias bloqueadas y desbloqueadas:
+    // Solo primer semestre desbloqueado inicialmente
+    // Las materias que estén completadas en estado se muestran completadas
+    // Las materias desbloqueadas (que no están completadas) se habilitan
 
-        (subject.unlocks || []).forEach(unlock => {
-          const unlocked = document.querySelectorAll('.subject');
-          unlocked.forEach(sub => {
-            if (sub.textContent === unlock && state[unlock] === 'locked') {
-              sub.classList.remove('locked');
-              state[unlock] = 'unlocked';
-            }
-          });
+    // Función para crear toda la malla
+    function crearMalla() {
+      const container = document.getElementById("malla");
+      container.innerHTML = "";
+
+      semestres.forEach((semestre, sIndex) => {
+        const divSem = document.createElement("div");
+        divSem.className = "semestre";
+        const h2 = document.createElement("h2");
+        h2.textContent = semestre.nombre;
+        divSem.appendChild(h2);
+
+        semestre.materias.forEach((mat, mIndex) => {
+          const id = `s${sIndex}-m${mIndex}`;
+          const divMat = document.createElement("div");
+          divMat.className = "materia";
+          divMat.id = id;
+
+          // Checkbox + label para tache
+          const checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.id = `${id}-chk`;
+          checkbox.disabled = true; // Deshabilitado por defecto, se habilitará después
+          if (estado[id]) {
+            checkbox.checked = true;
+          }
+
+          // Label para texto
+          const label = document.createElement("label");
+          label.htmlFor = `${id}-chk`;
+          label.textContent = mat;
+
+          divMat.appendChild(checkbox);
+          divMat.appendChild(label);
+
+          divSem.appendChild(divMat);
+        });
+
+        container.appendChild(divSem);
+      });
+    }
+
+    // Actualizar estado visual de materias (bloqueada, desbloqueada, completada)
+    function actualizarEstadoVisual() {
+      semestres.forEach((semestre, sIndex) => {
+        semestre.materias.forEach((mat, mIndex) => {
+          const id = `s${sIndex}-m${mIndex}`;
+          const divMat = document.getElementById(id);
+          const checkbox = document.getElementById(`${id}-chk`);
+
+          // Condición desbloqueo:
+          // Primer semestre siempre desbloqueado
+          // Para otros semestres, si al menos una materia del semestre anterior está completada, pero aquí no es así, porque sólo se desbloquea si desbloqueaste específicamente
+          // Mejor: Partimos bloqueado todo menos primer semestre
+          // Luego desbloqueamos según estado y reglas
+
+          // Si ya completada
+          if (estado[id]) {
+            divMat.classList.add("completada");
+            divMat.classList.remove("bloqueada");
+            checkbox.disabled = false;
+            checkbox.checked = true;
+            return;
+          }
+
+          // Si primer semestre, desbloqueado si no completado
+          if (sIndex === 0) {
+            divMat.classList.remove("bloqueada");
+            checkbox.disabled = false;
+            checkbox.checked = false;
+            return;
+          }
+
+          // Para otros semestres, desbloqueado sólo si desbloqueado explícitamente por reglas o si ya completado
+          // Así que chequeamos si está desbloqueado
+          if (materiaDesbloqueada(id)) {
+            divMat.classList.remove("bloqueada");
+            checkbox.disabled = false;
+            checkbox.checked = false;
+          } else {
+            divMat.classList.add("bloqueada");
+            checkbox.disabled = true;
+            checkbox.checked = false;
+            divMat.classList.remove("completada");
+          }
         });
       });
-
-      return div;
     }
 
-    const grid = document.getElementById('curriculum');
-    for (let sem = 1; sem <= 8; sem++) {
-      const column = document.createElement('div');
-      column.className = 'semester';
+    // Verificar si materia está desbloqueada según reglas y estado completado
+    function materiaDesbloqueada(id) {
+      // Primer semestre siempre desbloqueado
+      if (id.startsWith("s0-")) return true;
 
-      const title = document.createElement('h3');
-      title.textContent = `${sem}º Semestre`;
-      column.appendChild(title);
+      // Buscar semestre y materia
+      const [s, m] = id.match(/s(\d+)-m(\d+)/).slice(1, 3).map(Number);
 
-      curriculum[sem].forEach(subject => {
-        const subjectDiv = createSubject(sem, subject);
-        column.appendChild(subjectDiv);
+      // Regla 1: si la materia anterior en el mismo semestre está desbloqueada o completada, no sirve para desbloqueo
+      // Aquí se debe ver si está desbloqueada porque fue desbloqueada por materia completada de semestre anterior
+
+      // Lógica simplificada:
+      // Materia desbloqueada si existe alguna materia completada que la desbloquea (según objeto desbloqueos) o para el caso especial del cuarto semestre
+
+      // Buscamos en desbloqueos si algún completado desbloquea esta materia
+      for (const [completadoId, desbloqueadas] of Object.entries(desbloqueos)) {
+        if (desbloqueadas.includes(id) && estado[completadoId]) {
+          return true;
+        }
+      }
+
+      // Caso especial: desbloqueo de 3 materias en 4to semestre si se completan lab higiene industrial 1 y ergonomia 1 (s2-m1 y s2-m2)
+      if (
+        (id === "s3-m0" || id === "s3-m1" || id === "s3-m2") &&
+        estado["s2-m1"] &&
+        estado["s2-m2"]
+      ) {
+        return true;
+      }
+
+      // Caso especial: desbloqueo para séptimo semestre (interpretación planos desbloqueada por procesos productivos 1)
+      // Ya cubierto en objeto desbloqueos
+
+      // Si ninguna condición cumple, bloqueada
+      return false;
+    }
+
+    // Al hacer click en checkbox, actualizar estado y desbloqueos
+    function manejarCambio(e) {
+      const checkbox = e.target;
+      const id = checkbox.id.replace("-chk", "");
+      if (checkbox.checked) {
+        estado[id] = true;
+      } else {
+        estado[id] = false;
+      }
+      // Guardar estado
+      localStorage.setItem("mallaEstado", JSON.stringify(estado));
+      // Actualizar visual para todos
+      actualizarEstadoVisual();
+    }
+
+    // Inicializar la malla y agregar listeners
+    function init() {
+      crearMalla();
+      actualizarEstadoVisual();
+
+      // Agregar listener a cada checkbox
+      const allCheckboxes = document.querySelectorAll(".materia input[type=checkbox]");
+      allCheckboxes.forEach((chk) => {
+        chk.addEventListener("change", manejarCambio);
       });
-
-      grid.appendChild(column);
     }
-  </script>
-</body>
-</html>
+
+    init();
+
+    // Para evitar scroll horizontal demasiado pequeño, limitar tamaño columnas por CSS, ya lo manejamos con min-width y
