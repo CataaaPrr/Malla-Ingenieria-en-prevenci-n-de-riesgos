@@ -21,6 +21,9 @@
       gap: 10px;
       overflow-x: auto;
       padding-bottom: 10px;
+      /* Fuerza que el container tome todo el ancho visible y muestre scroll si es necesario */
+      width: 100vw;
+      box-sizing: border-box;
     }
     .semestre {
       background-color: #a8d5a8;
@@ -28,16 +31,20 @@
       border-radius: 8px;
       padding: 10px;
       min-width: 220px;
+      max-width: 220px;
       flex-shrink: 0;
       display: flex;
       flex-direction: column;
       align-items: center;
+      box-sizing: border-box;
+      /* Para que no se estire demasiado */
     }
     .semestre h2 {
       margin-top: 0;
       margin-bottom: 12px;
       font-weight: 700;
       font-size: 1.1rem;
+      text-align: center;
     }
     .materia {
       background-color: #d5edd5;
@@ -53,6 +60,7 @@
       color: #033603;
       font-weight: 600;
       transition: background-color 0.3s, border-color 0.3s, color 0.3s;
+      box-sizing: border-box;
     }
     .materia input[type="checkbox"] {
       margin-right: 10px;
@@ -60,19 +68,19 @@
       transform: scale(1.2);
     }
     .bloqueada {
-      background-color: #c0c0c0;
-      border-color: #8a8a8a;
-      color: #5a5a5a;
-      cursor: not-allowed;
+      background-color: #c0c0c0 !important;
+      border-color: #8a8a8a !important;
+      color: #5a5a5a !important;
+      cursor: not-allowed !important;
     }
     .bloqueada input[type="checkbox"] {
       pointer-events: none;
       cursor: not-allowed;
     }
     .completada {
-      background-color: #c7d9f1;
-      border-color: #4971b8;
-      color: #1a2a5a;
+      background-color: #c7d9f1 !important;
+      border-color: #4971b8 !important;
+      color: #1a2a5a !important;
       text-decoration: line-through;
     }
     .completada label {
@@ -101,20 +109,20 @@
     ];
 
     const desbloqueos = {
-      "s0-m2": ["s1-m1"], // Salud ocupacional -> Protocolos MINSAL 1
-      "s0-m3": ["s1-m2"], // Fundamentos seg. Industrial -> Seguridad industrial 1
-      "s0-m4": ["s1-m3"], // Química -> Riesgos en la Ind.Qca.
-      "s1-m1": ["s2-m1","s2-m2"], // Protocolos MINSAL 1 -> Lab. Higiene industrial 1 y Ergonomía 1
-      "s1-m2": ["s2-m3"], // Seguridad industrial 1 -> Seguridad industrial 2
-      "s1-m3": ["s2-m4"], // Riesgos en la Ind.Qca. -> Emergencias en la industria
-      "s2-m3": ["s3-m3"], // Seguridad industrial 2 -> Riesgos industriales
-      "s2-m4": ["s3-m4"], // Emergencias en la industria -> Emergencias civiles
-      "s4-m0": ["s5-m0","s6-m0"], // Procesos productivos 1 -> Procesos productivos 2 y Interpretación de planos
-      "s4-m1": ["s5-m1"], // Leyes laborales 1 -> Leyes laborales 2
-      "s4-m4": ["s5-m4"], // Leyes ambientales -> Energías renovables
-      "s5-m4": ["s6-m4"], // Energías renovables -> Control de riesgos ambientales
-      "s6-m1": ["s7-m0"], // Sistemas de gestión SSO -> Sistemas de gestión integrado
-      "s6-m4": ["s7-m3"], // Control de riesgos ambientales -> Sistemas de gestión ambiental
+      "s0-m2": ["s1-m1"],
+      "s0-m3": ["s1-m2"],
+      "s0-m4": ["s1-m3"],
+      "s1-m1": ["s2-m1","s2-m2"],
+      "s1-m2": ["s2-m3"],
+      "s1-m3": ["s2-m4"],
+      "s2-m3": ["s3-m3"],
+      "s2-m4": ["s3-m4"],
+      "s4-m0": ["s5-m0","s6-m0"],
+      "s4-m1": ["s5-m1"],
+      "s4-m4": ["s5-m4"],
+      "s5-m4": ["s6-m4"],
+      "s6-m1": ["s7-m0"],
+      "s6-m4": ["s7-m3"],
     };
 
     let estado = JSON.parse(localStorage.getItem("mallaEstado")) || {};
@@ -126,6 +134,7 @@
       semestres.forEach((semestre, sIndex) => {
         const divSem = document.createElement("div");
         divSem.className = "semestre";
+
         const h2 = document.createElement("h2");
         h2.textContent = semestre.nombre;
         divSem.appendChild(h2);
@@ -150,6 +159,7 @@
           divMat.appendChild(label);
           divSem.appendChild(divMat);
         });
+
         container.appendChild(divSem);
       });
     }
@@ -157,7 +167,7 @@
     function materiaDesbloqueada(id) {
       if (id.startsWith("s0-")) return true;
 
-      // Desbloqueo especial 4to semestre (3 materias)
+      // Desbloqueo especial 4to semestre
       if (["s3-m0","s3-m1","s3-m2"].includes(id) && estado["s2-m1"] && estado["s2-m2"]) return true;
 
       for (const [completadoId, desbloqueadas] of Object.entries(desbloqueos)) {
