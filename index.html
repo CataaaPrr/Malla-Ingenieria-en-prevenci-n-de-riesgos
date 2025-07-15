@@ -110,6 +110,12 @@
       matDiv.className = index === 0 ? "materia desbloqueada" : "materia bloqueada";
       matDiv.dataset.id = `m${index + 1}_${i + 1}`;
       matDiv.textContent = nombre;
+
+      matDiv.addEventListener("click", () => {
+        if (matDiv.classList.contains("bloqueada")) return;
+        matDiv.classList.toggle("completada");
+      });
+
       div.appendChild(matDiv);
     });
 
