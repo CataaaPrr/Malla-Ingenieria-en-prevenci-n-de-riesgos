@@ -3,11 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Malla Curricular - Ingeniería en Prevención de Riesgos</title>
+  <title>Malla Curricular - Prevención de Riesgos</title>
   <style>
     body {
-      background-color: #d8f3dc; /* verde pastel */
+      background-color: #d8f3dc;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
       padding: 20px;
     }
 
@@ -17,33 +18,34 @@
     }
 
     .grid {
-      display: grid;
-      grid-template-columns: repeat(8, 1fr);
-      gap: 10px;
+      display: flex;
+      gap: 20px;
+      overflow-x: auto;
+      padding: 20px 0;
     }
 
     .semester {
-      background-color: #b7e4c7; /* verde pastel */
-      border: 2px solid #40916c; /* verde pastel oscuro */
-      padding: 10px;
+      flex: 0 0 220px;
+      background-color: #b7e4c7;
+      border: 2px solid #40916c;
       border-radius: 10px;
-      box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.1);
+      padding: 10px;
+      box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
     }
 
     .semester h3 {
       text-align: center;
-      margin-bottom: 10px;
       color: #1b4332;
     }
 
     .subject {
-      background-color: #e9f5ec; /* verde pálido */
+      background-color: #e9f5ec;
       border: 1px solid #74c69d;
-      padding: 8px;
       border-radius: 5px;
-      margin-bottom: 5px;
+      padding: 8px;
+      margin: 5px 0;
       cursor: pointer;
-      box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.1);
+      box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
     }
 
     .subject.locked {
@@ -54,8 +56,8 @@
     }
 
     .subject.completed {
-      background-color: #cfe6f3; /* azul claro */
-      border: 1px solid #5b9fcf; /* azul oscuro */
+      background-color: #cfe6f3;
+      border: 1px solid #5b9fcf;
       color: #1c3d5a;
       text-decoration: line-through;
     }
@@ -109,82 +111,84 @@
     function crearMalla() {
       const contenedor = document.getElementById("malla");
       for (let i = 1; i <= 8; i++) {
-        const semestre = document.createElement("div");
-        semestre.className = "semester";
+        const columna = document.createElement("div");
+        columna.className = "semester";
+
         const titulo = document.createElement("h3");
-        titulo.innerText = `Semestre ${i}`;
-        semestre.appendChild(titulo);
+        titulo.textContent = `Semestre ${i}`;
+        columna.appendChild(titulo);
 
         malla[i].forEach(materia => {
-          const div = document.createElement("div");
-          div.className = "subject";
-          div.innerText = materia;
-          div.dataset.nombre = materia;
-          div.dataset.semestre = i;
-          estado[materia] = {
-            elemento: div,
-            completado: false,
-            bloqueado: i !== 1,
-            dependientes: []
-          };
-          if (i !== 1) div.classList.add("locked");
-          div.addEventListener("click", () => toggleMateria(materia));
-          semestre.appendChild(div);
-        });
-      }
-
-      // Asignar dependencias inversas
-      for (const [materia, deps] of Object.entries(dependencias)) {
-        deps.forEach(dep => {
-          if (estado[dep]) {
-            estado[dep].prerrequisitos = estado[dep].prerrequisitos || [];
-            estado[dep].prerrequisitos.push(materia);
+          const item = document.createElement("div");
+          item.className = "subject";
+          item.textContent = materia;
+          item.dataset.nombre = materia;
+          item.dataset.semestre = i;
+          if (i !== 1) {
+            item.classList.add("locked");
+            item.dataset.locked = "true";
+          } else {
+            item.dataset.locked = "false";
           }
+          item.dataset.completed = "false";
+          item.addEventListener("click", () => toggle(item));
+
+          estado[materia] = item;
+          columna.appendChild(item);
         });
-      }
 
-      contenedor.appendChild(document.createElement("div"));
-    }
-
-    function toggleMateria(nombre) {
-      const data = estado[nombre];
-      if (data.bloqueado) return;
-
-      data.completado = !data.completado;
-      data.elemento.classList.toggle("completed", data.completado);
-
-      actualizarDesbloqueos();
-      desbloquearSemestre();
-    }
-
-    function actualizarDesbloqueos() {
-      for (const [nombre, data] of Object.entries(estado)) {
-        if (!data.prerrequisitos || data.completado) continue;
-        const todosCompletos = data.prerrequisitos.every(p => estado[p]?.completado);
-        if (todosCompletos && data.bloqueado) {
-          data.bloqueado = false;
-          data.elemento.classList.remove("locked");
-        } else if (!todosCompletos && !malla[1].includes(nombre)) {
-          data.bloqueado = true;
-          data.elemento.classList.add("locked");
-          data.elemento.classList.remove("completed");
-          data.completado = false;
-        }
+        contenedor.appendChild(columna);
       }
     }
 
-    function desbloquearSemestre() {
-      for (let i = 2; i <= 8; i++) {
-        const materias = malla[i - 1];
-        const todasCompletas = materias.every(m => estado[m].completado);
-        if (todasCompletas) {
-          malla[i].forEach(m => {
-            if (estado[m].bloqueado) {
-              estado[m].bloqueado = false;
-              estado[m].elemento.classList.remove("locked");
+    function toggle(item) {
+      if (item.dataset.locked === "true") return;
+
+      const nombre = item.dataset.nombre;
+      const completado = item.dataset.completed === "true";
+      item.dataset.completed = (!completado).toString();
+      item.classList.toggle("completed", !completado);
+
+      actualizarDependencias();
+      actualizarSemestres();
+    }
+
+    function actualizarDependencias() {
+      for (const [origen, destinos] of Object.entries(dependencias)) {
+        const origenItem = estado[origen];
+        if (origenItem.dataset.completed === "true") {
+          destinos.forEach(dest => {
+            if (estado[dest].dataset.locked === "true") {
+              estado[dest].classList.remove("locked");
+              estado[dest].dataset.locked = "false";
             }
           });
+        } else {
+          destinos.forEach(dest => {
+            estado[dest].classList.add("locked");
+            estado[dest].classList.remove("completed");
+            estado[dest].dataset.locked = "true";
+            estado[dest].dataset.completed = "false";
+          });
         }
+      }
+    }
+
+    function actualizarSemestres() {
+      for (let i = 2; i <= 8; i++) {
+        const prev = malla[i - 1];
+        const desbloqueable = prev.every(m => estado[m].dataset.completed === "true");
+        malla[i].forEach(m => {
+          if (desbloqueable && estado[m].dataset.locked === "true") {
+            estado[m].classList.remove("locked");
+            estado[m].dataset.locked = "false";
+          } else if (!desbloqueable) {
+            estado[m].classList.add("locked");
+            estado[m].classList.remove("completed");
+            estado[m].dataset.locked = "true";
+            estado[m].dataset.completed = "false";
+          }
+        });
       }
     }
 
