@@ -82,46 +82,91 @@
 </div>
 
 <script>
-  const materiasPorSemestre = [
-    ["Matemáticas", "Taller integrado ABP", "Salud ocupacional", "Fundamentos de seg. Industrial", "Química", "Comunicación y aprendizaje", "Herramientas de ofimáticas"],
-    ["Matemática aplicada", "Protocolos MINSAL 1", "Seguridad industrial 1", "Riesgos en la Ind.Qca.", "Inglés 1", "Desarrollo personal"],
-    ["Física 1", "Lab. Higiene industrial 1", "Ergonomía 1", "Seguridad industrial 2", "Emergencias en la industria", "Inglés 2", "Cultura y sociedad"],
-    ["Protocolos MINSAL 2", "Lab. Higiene industrial 2", "Ergonomía 2", "Riesgos industriales", "Emergencias civiles", "Emprendimiento y empleabilidad", "Sustentabilidad y medioambiente"],
-    ["Procesos productivos 1", "Leyes laborales 1", "Física 2", "Elaboración de informes técnicos", "Leyes ambientales", "Inglés 3"],
-    ["Procesos productivos 2", "Leyes laborales 2", "Laboratorio de EPP", "Estadística y probabilidades", "Energías renovables", "Inglés 4", "Habilidades comunicativas"],
-    ["Interpretación de planos", "Sistemas de gestión SSO", "Evaluación proyectos de prevención", "Plan experto trabajo en terreno", "Control de riesgos ambientales"],
-    ["Sistemas de gestión integrado", "Proyecto integrado final", "Gestión habilidades directivas", "Sistemas de gestión ambiental", "Práctica integrada competencias"]
-  ];
+const dependencias = {
+  'Salud ocupacional': ['Protocolos MINSAL 1'],
+  'Protocolos MINSAL 1': ['Lab. Higiene industrial 1', 'Ergonomía 1'],
+  'Lab. Higiene industrial 1': ['Protocolos MINSAL 2'],
+  'Ergonomía 1': ['Lab. Higiene industrial 2', 'Ergonomía 2'],
 
-  const fila1 = document.getElementById("fila1");
-  const fila2 = document.getElementById("fila2");
+  'Fundamentos de seg. Industrial': ['Seguridad industrial 1'],
+  'Seguridad industrial 1': ['Seguridad industrial 2'],
+  'Seguridad industrial 2': ['Riesgos industriales'],
 
-  materiasPorSemestre.forEach((materias, index) => {
-    const div = document.createElement("div");
-    div.className = "semestre";
-    div.dataset.semestre = index + 1;
+  'Química': ['Riesgos en la Ind.Qca.'],
+  'Riesgos en la Ind.Qca.': ['Emergencias en la industria'],
+  'Emergencias en la industria': ['Emergencias civiles'],
 
-    const h2 = document.createElement("h2");
-    h2.textContent = `${index + 1}° Semestre`;
-    div.appendChild(h2);
+  'Procesos productivos 1': ['Procesos productivos 2'],
+  'Procesos productivos 2': ['Interpretación de planos'],
 
-    materias.forEach((nombre, i) => {
-      const matDiv = document.createElement("div");
-      matDiv.className = index === 0 ? "materia desbloqueada" : "materia bloqueada";
-      matDiv.dataset.id = `m${index + 1}_${i + 1}`;
-      matDiv.textContent = nombre;
+  'Leyes laborales 1': ['Leyes laborales 2'],
+  'Sistemas de gestión SSO': ['Sistemas de gestión integrado'],
 
-      matDiv.addEventListener("click", () => {
-        if (matDiv.classList.contains("bloqueada")) return;
-        matDiv.classList.toggle("completada");
-      });
+  'Leyes ambientales': ['Energías renovables'],
+  'Energías renovables': ['Control de riesgos ambientales'],
+  'Control de riesgos ambientales': ['Sistemas de gestión ambiental']
+};
 
-      div.appendChild(matDiv);
+const materiasPorSemestre = [
+  ["Matemáticas", "Taller integrado ABP", "Salud ocupacional", "Fundamentos de seg. Industrial", "Química", "Comunicación y aprendizaje", "Herramientas de ofimáticas"],
+  ["Matemática aplicada", "Protocolos MINSAL 1", "Seguridad industrial 1", "Riesgos en la Ind.Qca.", "Inglés 1", "Desarrollo personal"],
+  ["Física 1", "Lab. Higiene industrial 1", "Ergonomía 1", "Seguridad industrial 2", "Emergencias en la industria", "Inglés 2", "Cultura y sociedad"],
+  ["Protocolos MINSAL 2", "Lab. Higiene industrial 2", "Ergonomía 2", "Riesgos industriales", "Emergencias civiles", "Emprendimiento y empleabilidad", "Sustentabilidad y medioambiente"],
+  ["Procesos productivos 1", "Leyes laborales 1", "Física 2", "Elaboración de informes técnicos", "Leyes ambientales", "Inglés 3"],
+  ["Procesos productivos 2", "Leyes laborales 2", "Laboratorio de EPP", "Estadística y probabilidades", "Energías renovables", "Inglés 4", "Habilidades comunicativas"],
+  ["Interpretación de planos", "Sistemas de gestión SSO", "Evaluación proyectos de prevención", "Plan experto trabajo en terreno", "Control de riesgos ambientales"],
+  ["Sistemas de gestión integrado", "Proyecto integrado final", "Gestión habilidades directivas", "Sistemas de gestión ambiental", "Práctica integrada competencias"]
+];
+
+const fila1 = document.getElementById("fila1");
+const fila2 = document.getElementById("fila2");
+const materiasMap = {};
+
+materiasPorSemestre.forEach((materias, index) => {
+  const div = document.createElement("div");
+  div.className = "semestre";
+  div.dataset.semestre = index + 1;
+
+  const h2 = document.createElement("h2");
+  h2.textContent = `${index + 1}° Semestre`;
+  div.appendChild(h2);
+
+  materias.forEach((nombre) => {
+    const matDiv = document.createElement("div");
+    matDiv.className = index === 0 ? "materia" : "materia bloqueada";
+    matDiv.textContent = nombre;
+    materiasMap[nombre] = matDiv;
+
+    matDiv.addEventListener("click", () => {
+      if (matDiv.classList.contains("bloqueada")) return;
+
+      matDiv.classList.toggle("completada");
+      if (!matDiv.classList.contains("completada")) return;
+
+      if (dependencias[nombre]) {
+        dependencias[nombre].forEach(dep => {
+          if (materiasMap[dep]) materiasMap[dep].classList.remove("bloqueada");
+        });
+      }
+
+      // Desbloqueo del siguiente semestre completo si todas están completadas
+      const semestreIndex = materiasPorSemestre.findIndex(sem => sem.includes(nombre));
+      const actual = document.querySelectorAll(`.semestre[data-semestre="${semestreIndex + 1}"] .materia`);
+      const completadas = document.querySelectorAll(`.semestre[data-semestre="${semestreIndex + 1}"] .materia.completada`);
+      if (actual.length === completadas.length) {
+        const siguienteSemestre = document.querySelector(`.semestre[data-semestre="${semestreIndex + 2}"]`);
+        if (siguienteSemestre) {
+          siguienteSemestre.querySelectorAll('.materia').forEach(m => m.classList.remove("bloqueada"));
+        }
+      }
     });
 
-    if (index < 6) fila1.appendChild(div);
-    else fila2.appendChild(div);
+    div.appendChild(matDiv);
   });
+
+  if (index < 6) fila1.appendChild(div);
+  else fila2.appendChild(div);
+});
 </script>
 
 </body>
