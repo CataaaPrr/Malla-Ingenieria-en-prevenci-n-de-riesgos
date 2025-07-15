@@ -27,6 +27,7 @@
       border: 2px solid #40916c; /* verde pastel oscuro */
       padding: 10px;
       border-radius: 10px;
+      box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.1);
     }
 
     .semester h3 {
@@ -37,11 +38,12 @@
 
     .subject {
       background-color: #e9f5ec; /* verde pálido */
-      border: 1px solid #74c69d; /* borde más oscuro */
+      border: 1px solid #74c69d;
       padding: 8px;
       border-radius: 5px;
       margin-bottom: 5px;
       cursor: pointer;
+      box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.1);
     }
 
     .subject.locked {
@@ -61,36 +63,18 @@
 </head>
 <body>
   <h1>Malla Curricular - Ingeniería en Prevención de Riesgos</h1>
-  <div class="grid" id="malla">
-    <!-- Semestres se generan vía JS -->
-  </div>
+  <div class="grid" id="malla"></div>
 
   <script>
     const malla = {
-      1: [
-        "Matemáticas", "Taller integrado ABP", "Salud ocupacional", "Fundamentos de seg. Industrial", "Química", "Comunicación y aprendizaje", "Herramientas de ofimaticas"
-      ],
-      2: [
-        "Matemática aplicada", "Protocolos MINSAL 1", "Seguridad industrial 1", "Riesgos en la Ind.Qca.", "Inglés 1", "Desarrollo personal"
-      ],
-      3: [
-        "Física 1", "Lab. Higiene industrial 1", "Ergonomía 1", "Seguridad industrial 2", "Emergencias en la industria", "Inglés 2", "Cultura y sociedad"
-      ],
-      4: [
-        "Protocolos MINSAL 2", "Lab. Higiene industrial 2", "Ergonomía 2", "Riesgos industriales", "Emergencias civiles", "Emprendimiento y empleabilidad", "Sustentabilidad y medioambiente"
-      ],
-      5: [
-        "Procesos productivos 1", "Leyes laborales 1", "Física 2", "Elaboración de infor. Técnicos", "Leyes ambientales", "Inglés 3"
-      ],
-      6: [
-        "Procesos productivos 2", "Leyes laborales 2", "Laboratorio de EPP", "Estadística y probabilidades", "Energías renovables", "Inglés 4", "Habilidades comunicativas"
-      ],
-      7: [
-        "Interpretación de planos", "Sistemas de gestión SSO", "Ev. Proyectos de prevención", "Plan experto trabajo en terreno", "Control de riesgos ambientales"
-      ],
-      8: [
-        "Sistemas de gestión integrado", "Proyecto integrado final", "Gestión hab. Directivas", "Sistemas de gestión ambiental", "Práct. Integrada competencias"
-      ]
+      1: ["Matemáticas", "Taller integrado ABP", "Salud ocupacional", "Fundamentos de seg. Industrial", "Química", "Comunicación y aprendizaje", "Herramientas de ofimaticas"],
+      2: ["Matemática aplicada", "Protocolos MINSAL 1", "Seguridad industrial 1", "Riesgos en la Ind.Qca.", "Inglés 1", "Desarrollo personal"],
+      3: ["Física 1", "Lab. Higiene industrial 1", "Ergonomía 1", "Seguridad industrial 2", "Emergencias en la industria", "Inglés 2", "Cultura y sociedad"],
+      4: ["Protocolos MINSAL 2", "Lab. Higiene industrial 2", "Ergonomía 2", "Riesgos industriales", "Emergencias civiles", "Emprendimiento y empleabilidad", "Sustentabilidad y medioambiente"],
+      5: ["Procesos productivos 1", "Leyes laborales 1", "Física 2", "Elaboración de infor. Técnicos", "Leyes ambientales", "Inglés 3"],
+      6: ["Procesos productivos 2", "Leyes laborales 2", "Laboratorio de EPP", "Estadística y probabilidades", "Energías renovables", "Inglés 4", "Habilidades comunicativas"],
+      7: ["Interpretación de planos", "Sistemas de gestión SSO", "Ev. Proyectos de prevención", "Plan experto trabajo en terreno", "Control de riesgos ambientales"],
+      8: ["Sistemas de gestión integrado", "Proyecto integrado final", "Gestión hab. Directivas", "Sistemas de gestión ambiental", "Práct. Integrada competencias"]
     };
 
     const dependencias = {
@@ -140,15 +124,26 @@
           estado[materia] = {
             elemento: div,
             completado: false,
-            bloqueado: i !== 1
+            bloqueado: i !== 1,
+            dependientes: []
           };
           if (i !== 1) div.classList.add("locked");
           div.addEventListener("click", () => toggleMateria(materia));
           semestre.appendChild(div);
         });
-
-        contenedor.appendChild(semestre);
       }
+
+      // Asignar dependencias inversas
+      for (const [materia, deps] of Object.entries(dependencias)) {
+        deps.forEach(dep => {
+          if (estado[dep]) {
+            estado[dep].prerrequisitos = estado[dep].prerrequisitos || [];
+            estado[dep].prerrequisitos.push(materia);
+          }
+        });
+      }
+
+      contenedor.appendChild(document.createElement("div"));
     }
 
     function toggleMateria(nombre) {
@@ -158,16 +153,24 @@
       data.completado = !data.completado;
       data.elemento.classList.toggle("completed", data.completado);
 
-      if (data.completado && dependencias[nombre]) {
-        dependencias[nombre].forEach(dep => {
-          if (estado[dep]) {
-            estado[dep].bloqueado = false;
-            estado[dep].elemento.classList.remove("locked");
-          }
-        });
-      }
-
+      actualizarDesbloqueos();
       desbloquearSemestre();
+    }
+
+    function actualizarDesbloqueos() {
+      for (const [nombre, data] of Object.entries(estado)) {
+        if (!data.prerrequisitos || data.completado) continue;
+        const todosCompletos = data.prerrequisitos.every(p => estado[p]?.completado);
+        if (todosCompletos && data.bloqueado) {
+          data.bloqueado = false;
+          data.elemento.classList.remove("locked");
+        } else if (!todosCompletos && !malla[1].includes(nombre)) {
+          data.bloqueado = true;
+          data.elemento.classList.add("locked");
+          data.elemento.classList.remove("completed");
+          data.completado = false;
+        }
+      }
     }
 
     function desbloquearSemestre() {
