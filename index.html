@@ -124,15 +124,10 @@
           item.textContent = materia;
           item.dataset.nombre = materia;
           item.dataset.semestre = i;
-          if (i !== 1) {
-            item.classList.add("locked");
-            item.dataset.locked = "true";
-          } else {
-            item.dataset.locked = "false";
-          }
+          item.dataset.locked = i !== 1 ? "true" : "false";
           item.dataset.completed = "false";
+          if (i !== 1) item.classList.add("locked");
           item.addEventListener("click", () => toggle(item));
-
           estado[materia] = item;
           columna.appendChild(item);
         });
@@ -144,49 +139,51 @@
     function toggle(item) {
       if (item.dataset.locked === "true") return;
 
-      const nombre = item.dataset.nombre;
       const completado = item.dataset.completed === "true";
       item.dataset.completed = (!completado).toString();
       item.classList.toggle("completed", !completado);
 
       actualizarDependencias();
-      actualizarSemestres();
     }
 
     function actualizarDependencias() {
-      for (const [origen, destinos] of Object.entries(dependencias)) {
-        const origenItem = estado[origen];
-        if (origenItem.dataset.completed === "true") {
-          destinos.forEach(dest => {
-            if (estado[dest].dataset.locked === "true") {
-              estado[dest].classList.remove("locked");
-              estado[dest].dataset.locked = "false";
-            }
+      for (const [materia, item] of Object.entries(estado)) {
+        // Verifica si tiene dependencias
+        const dependents = Object.entries(dependencias).filter(([_, d]) => d.includes(materia)).map(([k]) => k);
+        dependents.forEach(dep => {
+          if (!estado[dep].classList.contains("completed")) {
+            estado[materia].classList.add("locked");
+            estado[materia].dataset.locked = "true";
+            estado[materia].dataset.completed = "false";
+            estado[materia].classList.remove("completed");
+          }
+        });
+      }
+
+      for (const [materia, dependents] of Object.entries(dependencias)) {
+        const origen = estado[materia];
+        if (origen.dataset.completed === "true") {
+          dependents.forEach(dep => {
+            estado[dep].classList.remove("locked");
+            estado[dep].dataset.locked = "false";
           });
         } else {
-          destinos.forEach(dest => {
-            estado[dest].classList.add("locked");
-            estado[dest].classList.remove("completed");
-            estado[dest].dataset.locked = "true";
-            estado[dest].dataset.completed = "false";
+          dependents.forEach(dep => {
+            estado[dep].classList.add("locked");
+            estado[dep].dataset.locked = "true";
+            estado[dep].dataset.completed = "false";
+            estado[dep].classList.remove("completed");
           });
         }
       }
-    }
 
-    function actualizarSemestres() {
+      // Desbloqueo de semestres completos
       for (let i = 2; i <= 8; i++) {
-        const prev = malla[i - 1];
-        const desbloqueable = prev.every(m => estado[m].dataset.completed === "true");
+        const todasPrevCompletadas = malla[i - 1].every(m => estado[m].dataset.completed === "true");
         malla[i].forEach(m => {
-          if (desbloqueable && estado[m].dataset.locked === "true") {
+          if (todasPrevCompletadas && estado[m].dataset.locked === "true") {
             estado[m].classList.remove("locked");
             estado[m].dataset.locked = "false";
-          } else if (!desbloqueable) {
-            estado[m].classList.add("locked");
-            estado[m].classList.remove("completed");
-            estado[m].dataset.locked = "true";
-            estado[m].dataset.completed = "false";
           }
         });
       }
