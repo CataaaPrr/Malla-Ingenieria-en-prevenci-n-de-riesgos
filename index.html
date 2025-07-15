@@ -6,190 +6,178 @@
   <title>Malla Curricular - Prevención de Riesgos</title>
   <style>
     body {
-      background-color: #d8f3dc;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #d6f5d6;
       margin: 0;
       padding: 20px;
     }
 
-    h1 {
-      text-align: center;
-      color: #1b4332;
-    }
-
     .grid {
-      display: flex;
-      gap: 20px;
-      overflow-x: auto;
-      padding: 20px 0;
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 10px;
     }
 
     .semester {
-      flex: 0 0 220px;
-      background-color: #b7e4c7;
-      border: 2px solid #40916c;
+      background-color: #c8e6c9;
+      border: 2px solid #81c784;
       border-radius: 10px;
       padding: 10px;
-      box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
     }
 
     .semester h3 {
       text-align: center;
-      color: #1b4332;
+      font-weight: bold;
     }
 
     .subject {
-      background-color: #e9f5ec;
-      border: 1px solid #74c69d;
-      border-radius: 5px;
-      padding: 8px;
       margin: 5px 0;
+      padding: 8px;
+      background-color: #e8f5e9;
+      border: 2px solid #a5d6a7;
+      border-radius: 5px;
+      font-weight: 600;
       cursor: pointer;
-      box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
     }
 
-    .subject.locked {
-      background-color: #ccc;
-      border-color: #999;
+    .locked {
+      background-color: #cccccc !important;
+      border: 2px solid #999999 !important;
       color: #666;
-      cursor: not-allowed;
+      pointer-events: none;
     }
 
-    .subject.completed {
-      background-color: #cfe6f3;
-      border: 1px solid #5b9fcf;
-      color: #1c3d5a;
+    .completed {
+      background-color: #cce4f6 !important;
+      border: 2px solid #5393c7 !important;
+      color: #0d47a1 !important;
       text-decoration: line-through;
     }
   </style>
 </head>
 <body>
   <h1>Malla Curricular - Ingeniería en Prevención de Riesgos</h1>
-  <div class="grid" id="malla"></div>
+  <div class="grid" id="curriculum"></div>
 
   <script>
-    const malla = {
-      1: ["Matemáticas", "Taller integrado ABP", "Salud ocupacional", "Fundamentos de seg. Industrial", "Química", "Comunicación y aprendizaje", "Herramientas de ofimaticas"],
-      2: ["Matemática aplicada", "Protocolos MINSAL 1", "Seguridad industrial 1", "Riesgos en la Ind.Qca.", "Inglés 1", "Desarrollo personal"],
-      3: ["Física 1", "Lab. Higiene industrial 1", "Ergonomía 1", "Seguridad industrial 2", "Emergencias en la industria", "Inglés 2", "Cultura y sociedad"],
-      4: ["Protocolos MINSAL 2", "Lab. Higiene industrial 2", "Ergonomía 2", "Riesgos industriales", "Emergencias civiles", "Emprendimiento y empleabilidad", "Sustentabilidad y medioambiente"],
-      5: ["Procesos productivos 1", "Leyes laborales 1", "Física 2", "Elaboración de infor. Técnicos", "Leyes ambientales", "Inglés 3"],
-      6: ["Procesos productivos 2", "Leyes laborales 2", "Laboratorio de EPP", "Estadística y probabilidades", "Energías renovables", "Inglés 4", "Habilidades comunicativas"],
-      7: ["Interpretación de planos", "Sistemas de gestión SSO", "Ev. Proyectos de prevención", "Plan experto trabajo en terreno", "Control de riesgos ambientales"],
-      8: ["Sistemas de gestión integrado", "Proyecto integrado final", "Gestión hab. Directivas", "Sistemas de gestión ambiental", "Práct. Integrada competencias"]
+    const curriculum = {
+      1: [
+        { name: "Matemáticas" },
+        { name: "Taller Integrado ABP" },
+        { name: "Salud Ocupacional", unlocks: ["Protocolos MINSAL 1"] },
+        { name: "Fundamentos de Seg. Industrial", unlocks: ["Seguridad Industrial 1"] },
+        { name: "Química", unlocks: ["Riesgos en la Ind.Qca."] },
+        { name: "Comunicación y Aprendizaje" },
+        { name: "Herramientas de Ofimáticas" }
+      ],
+      2: [
+        { name: "Matemática Aplicada" },
+        { name: "Protocolos MINSAL 1", locked: true, unlocks: ["Lab. Higiene Industrial 1", "Ergonomía 1"] },
+        { name: "Seguridad Industrial 1", locked: true, unlocks: ["Seguridad Industrial 2"] },
+        { name: "Riesgos en la Ind.Qca.", locked: true, unlocks: ["Emergencias en la Industria"] },
+        { name: "Inglés 1" },
+        { name: "Desarrollo Personal" }
+      ],
+      3: [
+        { name: "Física 1" },
+        { name: "Lab. Higiene Industrial 1", locked: true },
+        { name: "Ergonomía 1", locked: true },
+        { name: "Seguridad Industrial 2", locked: true, unlocks: ["Riesgos Industriales"] },
+        { name: "Emergencias en la Industria", locked: true, unlocks: ["Emergencias Civiles"] },
+        { name: "Inglés 2" },
+        { name: "Cultura y Sociedad" }
+      ],
+      4: [
+        { name: "Protocolos MINSAL 2", locked: true },
+        { name: "Lab. Higiene Industrial 2", locked: true },
+        { name: "Ergonomía 2", locked: true },
+        { name: "Riesgos Industriales", locked: true },
+        { name: "Emergencias Civiles", locked: true },
+        { name: "Emprendimiento y Empleabilidad" },
+        { name: "Sustentabilidad y Medioambiente" }
+      ],
+      5: [
+        { name: "Procesos Productivos 1", unlocks: ["Procesos Productivos 2"] },
+        { name: "Leyes Laborales 1", unlocks: ["Leyes Laborales 2"] },
+        { name: "Física 2" },
+        { name: "Elaboración de Infor. Técnicos" },
+        { name: "Leyes Ambientales", unlocks: ["Energías Renovables"] },
+        { name: "Inglés 3" }
+      ],
+      6: [
+        { name: "Procesos Productivos 2", locked: true, unlocks: ["Interpretación de Planos"] },
+        { name: "Leyes Laborales 2", locked: true },
+        { name: "Laboratorio de EPP" },
+        { name: "Estadística y Probabilidades" },
+        { name: "Energías Renovables", locked: true, unlocks: ["Control de Riesgos Ambientales"] },
+        { name: "Inglés 4" },
+        { name: "Habilidades Comunicativas" }
+      ],
+      7: [
+        { name: "Interpretación de Planos", locked: true },
+        { name: "Sistemas de Gestión SSO", unlocks: ["Sistemas de Gestión Integrado"] },
+        { name: "Ev. Proyectos de Prevención" },
+        { name: "Plan Experto Trabajo en Terreno" },
+        { name: "Control de Riesgos Ambientales", locked: true, unlocks: ["Sistemas de Gestión Ambiental"] }
+      ],
+      8: [
+        { name: "Sistemas de Gestión Integrado", locked: true },
+        { name: "Proyecto Integrado Final" },
+        { name: "Gestión Hab. Directivas" },
+        { name: "Sistemas de Gestión Ambiental", locked: true },
+        { name: "Práctica Integrada Competencias" }
+      ]
     };
 
-    const dependencias = {
-      "Salud ocupacional": ["Protocolos MINSAL 1"],
-      "Protocolos MINSAL 1": ["Lab. Higiene industrial 1", "Ergonomía 1"],
-      "Lab. Higiene industrial 1": ["Lab. Higiene industrial 2"],
-      "Ergonomía 1": ["Ergonomía 2"],
-      "Lab. Higiene industrial 2": ["Protocolos MINSAL 2"],
-      "Ergonomía 2": ["Protocolos MINSAL 2"],
+    const state = {};
 
-      "Fundamentos de seg. Industrial": ["Seguridad industrial 1"],
-      "Seguridad industrial 1": ["Seguridad industrial 2"],
-      "Seguridad industrial 2": ["Riesgos industriales"],
+    function createSubject(sem, subject) {
+      const div = document.createElement('div');
+      div.className = 'subject';
+      div.textContent = subject.name;
 
-      "Química": ["Riesgos en la Ind.Qca."],
-      "Riesgos en la Ind.Qca.": ["Emergencias en la industria"],
-      "Emergencias en la industria": ["Emergencias civiles"],
-
-      "Procesos productivos 1": ["Procesos productivos 2"],
-      "Procesos productivos 2": ["Interpretación de planos"],
-
-      "Leyes laborales 1": ["Leyes laborales 2"],
-      "Sistemas de gestión SSO": ["Sistemas de gestión integrado"],
-
-      "Leyes ambientales": ["Energías renovables"],
-      "Energías renovables": ["Control de riesgos ambientales"],
-      "Control de riesgos ambientales": ["Sistemas de gestión ambiental"]
-    };
-
-    const estado = {};
-
-    function crearMalla() {
-      const contenedor = document.getElementById("malla");
-      for (let i = 1; i <= 8; i++) {
-        const columna = document.createElement("div");
-        columna.className = "semester";
-
-        const titulo = document.createElement("h3");
-        titulo.textContent = `Semestre ${i}`;
-        columna.appendChild(titulo);
-
-        malla[i].forEach(materia => {
-          const item = document.createElement("div");
-          item.className = "subject";
-          item.textContent = materia;
-          item.dataset.nombre = materia;
-          item.dataset.semestre = i;
-          item.dataset.locked = i !== 1 ? "true" : "false";
-          item.dataset.completed = "false";
-          if (i !== 1) item.classList.add("locked");
-          item.addEventListener("click", () => toggle(item));
-          estado[materia] = item;
-          columna.appendChild(item);
-        });
-
-        contenedor.appendChild(columna);
-      }
-    }
-
-    function toggle(item) {
-      if (item.dataset.locked === "true") return;
-
-      const completado = item.dataset.completed === "true";
-      item.dataset.completed = (!completado).toString();
-      item.classList.toggle("completed", !completado);
-
-      actualizarDependencias();
-    }
-
-    function actualizarDependencias() {
-      for (const [materia, item] of Object.entries(estado)) {
-        // Verifica si tiene dependencias
-        const dependents = Object.entries(dependencias).filter(([_, d]) => d.includes(materia)).map(([k]) => k);
-        dependents.forEach(dep => {
-          if (!estado[dep].classList.contains("completed")) {
-            estado[materia].classList.add("locked");
-            estado[materia].dataset.locked = "true";
-            estado[materia].dataset.completed = "false";
-            estado[materia].classList.remove("completed");
-          }
-        });
+      if (subject.locked || sem !== 1) {
+        div.classList.add('locked');
+        state[subject.name] = 'locked';
+      } else {
+        state[subject.name] = 'unlocked';
       }
 
-      for (const [materia, dependents] of Object.entries(dependencias)) {
-        const origen = estado[materia];
-        if (origen.dataset.completed === "true") {
-          dependents.forEach(dep => {
-            estado[dep].classList.remove("locked");
-            estado[dep].dataset.locked = "false";
+      div.addEventListener('click', () => {
+        if (div.classList.contains('locked') || div.classList.contains('completed')) return;
+        div.classList.add('completed');
+        state[subject.name] = 'completed';
+
+        (subject.unlocks || []).forEach(unlock => {
+          const unlocked = document.querySelectorAll('.subject');
+          unlocked.forEach(sub => {
+            if (sub.textContent === unlock && state[unlock] === 'locked') {
+              sub.classList.remove('locked');
+              state[unlock] = 'unlocked';
+            }
           });
-        } else {
-          dependents.forEach(dep => {
-            estado[dep].classList.add("locked");
-            estado[dep].dataset.locked = "true";
-            estado[dep].dataset.completed = "false";
-            estado[dep].classList.remove("completed");
-          });
-        }
-      }
-
-      // Desbloqueo de semestres completos
-      for (let i = 2; i <= 8; i++) {
-        const todasPrevCompletadas = malla[i - 1].every(m => estado[m].dataset.completed === "true");
-        malla[i].forEach(m => {
-          if (todasPrevCompletadas && estado[m].dataset.locked === "true") {
-            estado[m].classList.remove("locked");
-            estado[m].dataset.locked = "false";
-          }
         });
-      }
+      });
+
+      return div;
     }
 
-    crearMalla();
+    const grid = document.getElementById('curriculum');
+    for (let sem = 1; sem <= 8; sem++) {
+      const column = document.createElement('div');
+      column.className = 'semester';
+
+      const title = document.createElement('h3');
+      title.textContent = `Semestre ${sem}`;
+      column.appendChild(title);
+
+      curriculum[sem].forEach(subject => {
+        const subjectDiv = createSubject(sem, subject);
+        column.appendChild(subjectDiv);
+      });
+
+      grid.appendChild(column);
+    }
   </script>
 </body>
 </html>
